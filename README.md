@@ -1,6 +1,6 @@
 # Filecoin-Cosmos: A Modular Redesign - Technical Specification
 
-**Version 3.5**
+**Version 3.6**
 
 ## 1. Introduction & Core Problem
 
@@ -32,6 +32,18 @@ The new architecture consists of a specialized L1, the **Filecoin Storage Chain 
 ## 2. Design Rationale: Why a Modular, Cosmos-based Approach?
 
 Before detailing the technical architecture, it is crucial to address the strategic rationale for choosing the Cosmos SDK and a modular design. This approach was selected to directly address the limitations of the current monolithic system while preserving Filecoin's core value proposition.
+
+### 2.1. Bridging Concepts: From Filecoin to Cosmos
+
+To help the Filecoin team leverage their existing knowledge, this section maps familiar concepts to their counterparts in the new design.
+
+* **Filecoin Actors → Cosmos SDK Modules:** The built-in actors that manage core protocol logic in legacy Filecoin (e.g., the Storage Market Actor, the Power Actor) are re-implemented as sovereign, composable modules within the Cosmos SDK framework (e.g., `x/dealmarket`, `x/proofs`). This provides a more standardized and maintainable structure.
+* **WinningPoSt → CometBFT Proposer Election:** The core mechanism of electing a block producer via the `WinningPoSt` lottery is preserved. However, instead of being part of a bespoke consensus engine, it is now integrated into the `PrepareProposal` step of the CometBFT engine via ABCI++, providing a clear separation between leader election and BFT consensus.
+* **The FVM → Application-Specific L2 Rollups:** The general-purpose execution environment provided by the FVM is moved from the L1 into a dedicated L2 rollup. This solves the state machine contention issue while allowing for even greater flexibility, as multiple, specialized execution environments (EVM, CosmWasm, etc.) can exist in parallel.
+* **Storage Providers → Delegators:** The role of Storage Providers is elevated. They remain the core workers of the network, but their proven Storage Power now also functions as the "stake" in a Delegated Proof-of-Useful-Work system. They delegate this power to professional Validators, giving them control over the network's consensus and governance.
+* **FIL Token → Native IBC Asset:** The FIL token's core functions remain, but its capabilities are massively expanded. Through IBC, it becomes a native, first-class asset across hundreds of other blockchains, enabling trust-minimized use in DeFi and other cross-chain applications without relying on wrapped bridges.
+
+### 2.2. Strategic Rationale
 
 * **Why the Cosmos SDK? - A Framework for Specialization:** The Cosmos SDK is not a blockchain; it is a framework for building them. It provides a battle-tested foundation for networking (CometBFT) and standard modules (like `x/bank` and `x/gov`), allowing development to focus on what makes Filecoin unique. By building the FSC with the SDK, we are not adopting a generic Proof-of-Stake (PoS) system. Instead, we are leveraging a shared, open-source foundation to build a highly specialized L1 whose consensus is driven by Filecoin's own Proof-of-Useful-Work, as detailed in Section 3. This directly addresses the **High Contribution Barrier for Developers** by lowering the development overhead associated with maintaining a completely bespoke L1 stack.
 
